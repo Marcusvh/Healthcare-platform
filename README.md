@@ -1,6 +1,7 @@
 # Healthcare-platform
 
 ## Architecture overview
+```mermaid
 flowchart TB
   subgraph "Hospital_Network (On-Prem)"
     direction TB
@@ -51,8 +52,11 @@ flowchart TB
 
   classDef db fill:#8ab8d8,stroke:#036,stroke-width:1px,color:#000;
   class WRITE_DB,READ_DB,INFLUX,EVENT_STORE db;
+```
 
 ## Event flow
+
+```mermaid
 flowchart LR
   A["Client (Staff UI)"] -->|"POST /patients (Command)"| CMDAPI["Command API"]
   CMDAPI -->|Validate & Handle Command| DOMAIN["Domain Model / Handlers"]
@@ -68,3 +72,4 @@ flowchart LR
 
   classDef db fill:#8ab8d8,stroke:#036,stroke-width:1px,color:#000;
   class WRITE_DB,READ_DB,TIMESCALEDB db;
+```
