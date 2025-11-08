@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CQRS vs Traditional Architecture</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: white;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .card h2 {
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #667eea;
+            font-size: 1.8em;
+        }
+
+        .traditional h2 {
+            color: #e74c3c;
+            border-bottom-color: #e74c3c;
+        }
+
+        .cqrs h2 {
+            color: #27ae60;
+            border-bottom-color: #27ae60;
+        }
+
+        .flow-diagram {
+            margin: 20px 0;
+        }
+
+        .flow-step {
+            background: #f8f9fa;
+            padding: 15px;
+            margin: 10px 0;
+            border-left: 4px solid #667eea;
+            border-radius: 4px;
+            position: relative;
+        }
+
+        .traditional .flow-step {
+            border-left-color: #e74c3c;
+        }
+
+        .cqrs .flow-step {
+            border-left-color: #27ae60;
+        }
+
+        .flow-step strong {
+            display: block;
+            margin-bottom: 5px;
+            color: #2c3e50;
+        }
+
+        .flow-step code {
+            background: #ecf0f1;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 0.9em;
+        }
+
+        .arrow {
+            text-align: center;
+            font-size: 2em;
+            color: #667eea;
+            margin: 5px 0;
+        }
+
+        .traditional .arrow {
+            color: #e74c3c;
+        }
+
+        .cqrs .arrow {
+            color: #27ae60;
+        }
+
+        .issues, .benefits {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        .issues {
+            background: #fee;
+            border: 2px solid #e74c3c;
+        }
+
+        .benefits {
+            background: #efe;
+            border: 2px solid #27ae60;
+        }
+
+        .issues h3 {
+            color: #c0392b;
+            margin-bottom: 10px;
+        }
+
+        .benefits h3 {
+            color: #27ae60;
+            margin-bottom: 10px;
+        }
+
+        .issues ul, .benefits ul {
+            margin-left: 20px;
+        }
+
+        .issues li, .benefits li {
+            margin: 8px 0;
+            line-height: 1.6;
+        }
+
+        .visual-flow {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 40px;
+        }
+
+        .visual-flow h2 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 30px;
+            font-size: 2em;
+        }
+
+        .split-view {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-top: 30px;
+        }
+
+        .command-side, .query-side {
+            padding: 20px;
+            border-radius: 8px;
+        }
+
+        .command-side {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+            color: white;
+        }
+
+        .query-side {
+            background: linear-gradient(135deg, #4ecdc4 0%, #44a08d 100%);
+            color: white;
+        }
+
+        .command-side h3, .query-side h3 {
+            margin-bottom: 15px;
+            font-size: 1.5em;
+            border-bottom: 2px solid rgba(255,255,255,0.5);
+            padding-bottom: 10px;
+        }
+
+        .flow-box {
+            background: rgba(255,255,255,0.15);
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 6px;
+            backdrop-filter: blur(10px);
+            font-size: 0.95em;
+        }
+
+        .benefits-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .benefit-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .benefit-card h4 {
+            margin-bottom: 10px;
+            font-size: 1.3em;
+            border-bottom: 2px solid rgba(255,255,255,0.3);
+            padding-bottom: 8px;
+        }
+
+        .benefit-card p {
+            line-height: 1.6;
+            margin-top: 10px;
+        }
+
+        @media (max-width: 900px) {
+            .comparison, .split-view {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏗️ CQRS Architecture Visualization</h1>
+
+        <div class="comparison">
+            <div class="card traditional">
+                <h2>❌ Traditional Architecture</h2>
+                <div class="flow-diagram">
+                    <div class="flow-step">
+                        <strong>1. Controller</strong>
+                        <code>PatientsController.Create(PatientDto dto)</code>
+                        <p>Contains ALL logic: validation, business rules, database access, logging, authorization</p>
+                    </div>
+                    <div class="arrow">↓</div>
+                    <div class="flow-step">
+                        <strong>2. Mixed Concerns</strong>
+                        <p>• Validate input<br>• Check authorization<br>• Business logic<br>• Log actions<br>• Database operations</p>
+                    </div>
+                    <div class="arrow">↓</div>
+                    <div class="flow-step">
+                        <strong>3. Database</strong>
+                        <p>Direct DbContext access from controller</p>
+                    </div>
+                </div>
+                <div class="issues">
+                    <h3>Problems:</h3>
+                    <ul>
+                        <li><strong>Fat Controllers:</strong> 200+ line methods with mixed responsibilities</li>
+                        <li><strong>Hard to Test:</strong> Can't test business logic without HTTP infrastructure</li>
+                        <li><strong>Tight Coupling:</strong> Changes ripple through entire stack</li>
+                        <li><strong>No Separation:</strong> Read and write logic intertwined</li>
+                        <li><strong>Poor Scalability:</strong> Can't optimize reads independently from writes</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="card cqrs">
+                <h2>✅ CQRS with MediatR</h2>
+                <div class="flow-diagram">
+                    <div class="flow-step">
+                        <strong>1. Thin Controller</strong>
+                        <code>await _mediator.Send(command)</code>
+                        <p>Only handles HTTP concerns, delegates to MediatR</p>
+                    </div>
+                    <div class="arrow">↓</div>
+                    <div class="flow-step">
+                        <strong>2. MediatR Routes Request</strong>
+                        <p>Finds appropriate handler via DI container</p>
+                    </div>
+                    <div class="arrow">↓</div>
+                    <div class="flow-step">
+                        <strong>3. Dedicated Handler</strong>
+                        <code>CreatePatientCommandHandler</code>
+                        <p>Single responsibility: create patient logic</p>
+                    </div>
+                    <div class="arrow">↓</div>
+                    <div class="flow-step">
+                        <strong>4. Database</strong>
+                        <p>Clean, focused data access</p>
+                    </div>
+                </div>
+                <div class="benefits">
+                    <h3>Benefits:</h3>
+                    <ul>
+                        <li><strong>Thin Controllers:</strong> 5-10 line methods that just coordinate</li>
+                        <li><strong>Easy Testing:</strong> Test handlers in isolation without HTTP</li>
+                        <li><strong>Loose Coupling:</strong> Changes are localized to single handlers</li>
+                        <li><strong>Clear Separation:</strong> Commands change state, queries return data</li>
+                        <li><strong>Scalable:</strong> Optimize reads and writes independently</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="visual-flow">
+            <h2>📊 CQRS: Command vs Query Separation</h2>
+            <div class="split-view">
+                <div class="command-side">
+                    <h3>🔴 Commands (Write Side)</h3>
+                    <div class="flow-box">
+                        <strong>Purpose:</strong> Change system state
+                    </div>
+                    <div class="flow-box">
+                        <strong>Examples:</strong><br>
+                        • CreatePatientCommand<br>
+                        • UpdatePatientCommand<br>
+                        • DeletePatientCommand
+                    </div>
+                    <div class="flow-box">
+                        <strong>Characteristics:</strong><br>
+                        • Returns simple types (ID, void, bool)<br>
+                        • Validates business rules<br>
+                        • Modifies database<br>
+                        • May trigger events
+                    </div>
+                    <div class="flow-box">
+                        <strong>Optimized For:</strong><br>
+                        • Data integrity<br>
+                        • Business rule enforcement<br>
+                        • Transaction consistency
+                    </div>
+                </div>
+
+                <div class="query-side">
+                    <h3>🔵 Queries (Read Side)</h3>
+                    <div class="flow-box">
+                        <strong>Purpose:</strong> Return data
+                    </div>
+                    <div class="flow-box">
+                        <strong>Examples:</strong><br>
+                        • GetPatientByIdQuery<br>
+                        • GetPatientsQuery<br>
+                        • SearchPatientsQuery
+                    </div>
+                    <div class="flow-box">
+                        <strong>Characteristics:</strong><br>
+                        • Returns DTOs<br>
+                        • No state changes<br>
+                        • Read-only database access<br>
+                        • Project to specific shapes
+                    </div>
+                    <div class="flow-box">
+                        <strong>Optimized For:</strong><br>
+                        • Performance (projections)<br>
+                        • Caching<br>
+                        • Denormalized views
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="visual-flow">
+            <h2>🎯 Key Benefits of CQRS</h2>
+            <div class="benefits-grid">
+                <div class="benefit-card">
+                    <h4>1. Single Responsibility</h4>
+                    <p>Each handler does ONE thing well. CreatePatientCommandHandler only creates patients. No mixed concerns.</p>
+                </div>
+                <div class="benefit-card">
+                    <h4>2. Testability</h4>
+                    <p>Test handlers in isolation without HTTP, databases, or infrastructure. Mock dependencies easily.</p>
+                </div>
+                <div class="benefit-card">
+                    <h4>3. Maintainability</h4>
+                    <p>Find all logic for "Create Patient" in one place. Changes don't ripple through the codebase.</p>
+                </div>
+                <div class="benefit-card">
+                    <h4>4. Scalability</h4>
+                    <p>Scale read and write operations independently. Add caching only to queries without affecting commands.</p>
+                </div>
+                <div class="benefit-card">
+                    <h4>5. Performance</h4>
+                    <p>Optimize queries with projections and denormalization. Commands focus on consistency, queries on speed.</p>
+                </div>
+                <div class="benefit-card">
+                    <h4>6. Extensibility</h4>
+                    <p>Add cross-cutting concerns (logging, validation, caching) via MediatR pipeline behaviors without touching handlers.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="visual-flow">
+            <h2>💡 Real-World Example: Patient Creation Flow</h2>
+            <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-top: 20px;">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px;">
+                    <div style="background: white; padding: 15px; border-radius: 6px; border-left: 4px solid #667eea;">
+                        <strong style="color: #667eea;">Step 1: HTTP Request</strong>
+                        <p style="margin-top: 10px; font-size: 0.9em;">POST /api/patients with JSON data</p>
+                    </div>
+                    <div style="background: white; padding: 15px; border-radius: 6px; border-left: 4px solid #667eea;">
+                        <strong style="color: #667eea;">Step 2: Controller</strong>
+                        <p style="margin-top: 10px; font-size: 0.9em;">5 lines: receive command, send to MediatR, return result</p>
+                    </div>
+                    <div style="background: white; padding: 15px; border-radius: 6px; border-left: 4px solid #667eea;">
+                        <strong style="color: #667eea;">Step 3: MediatR</strong>
+                        <p style="margin-top: 10px; font-size: 0.9em;">Finds CreatePatientCommandHandler via type matching</p>
+                    </div>
+                    <div style="background: white; padding: 15px; border-radius: 6px; border-left: 4px solid #667eea;">
+                        <strong style="color: #667eea;">Step 4: Handler</strong>
+                        <p style="margin-top: 10px; font-size: 0.9em;">Business logic: validate, create entity, save to DB</p>
+                    </div>
+                    <div style="background: white; padding: 15px; border-radius: 6px; border-left: 4px solid #667eea;">
+                        <strong style="color: #667eea;">Step 5: Database</strong>
+                        <p style="margin-top: 10px; font-size: 0.9em;">PostgreSQL generates UUID, inserts record</p>
+                    </div>
+                    <div style="background: white; padding: 15px; border-radius: 6px; border-left: 4px solid #667eea;">
+                        <strong style="color: #667eea;">Step 6: Response</strong>
+                        <p style="margin-top: 10px; font-size: 0.9em;">Handler returns GUID → Controller returns 201 Created</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
